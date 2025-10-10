@@ -6,7 +6,7 @@
 |----------|--------|----------|-----------------|
 | 1️⃣ Подготовка и конфигурация | ✅ Done | Инициализация проекта и настройка | 2025-10-10 |
 | 2️⃣ LLM Client | ✅ Done | Интеграция с OpenRouter | 2025-10-10 |
-| 3️⃣ Conversation Manager | ⏳ Pending | Управление диалогами | - |
+| 3️⃣ Conversation Manager | ✅ Done | Управление диалогами | 2025-10-10 |
 | 4️⃣ Telegram Bot | ⏳ Pending | Базовая интеграция | - |
 | 5️⃣ Интеграция | ⏳ Pending | Полная связка компонентов | - |
 | 6️⃣ Команды | ⏳ Pending | Команды бота | - |
@@ -76,13 +76,13 @@ LOG_LEVEL=INFO
 **Цель:** Управление контекстом диалога
 
 #### Задачи:
-- [ ] Создать `src/conversation_manager.py`
-- [ ] Определить dataclass-ы: `UserMessage`, `LLMResponse`, `ConversationContext`
-- [ ] Реализовать класс `ConversationManager`
-- [ ] Методы: `add_user_message()`, `add_llm_response()`, `get_messages_for_llm()`
-- [ ] Ограничение истории до 10 сообщений
-- [ ] Интегрировать с `LLMClient`
-- [ ] Добавить метод `clear_history()`
+- [x] Создать `src/conversation_manager.py`
+- [x] Определить dataclass-ы: `UserMessage`, `LLMResponse`, `ConversationContext`
+- [x] Реализовать класс `ConversationManager`
+- [x] Методы: `add_user_message()`, `add_llm_response()`, `get_messages_for_llm()`
+- [x] Ограничение истории до 10 сообщений
+- [x] Интегрировать с `LLMClient`
+- [x] Добавить метод `clear_history()`
 
 **Тест:** Создать диалог из нескольких сообщений и получить ответы от LLM
 

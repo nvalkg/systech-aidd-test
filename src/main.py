@@ -3,6 +3,7 @@ import logging
 import asyncio
 from config import Config
 from llm_client import LLMClient
+from conversation_manager import ConversationManager
 
 
 # Настройка логирования
@@ -15,10 +16,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-async def test_llm_client():
-    """Тестирование LLM клиента"""
+async def test_conversation_manager():
+    """Тестирование ConversationManager"""
     try:
-        logger.info("=== Тест LLM Client ===")
+        logger.info("=== Тест Conversation Manager ===")
         
         # Загрузка конфигурации
         config = Config()
@@ -33,16 +34,44 @@ async def test_llm_client():
         )
         logger.info("✅ LLM клиент инициализирован")
         
-        # Тестовый запрос
-        test_messages = [
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": "Say 'Hello, World!' in one sentence."}
-        ]
+        # Инициализация ConversationManager
+        conversation_manager = ConversationManager(
+            llm_client=llm_client,
+            system_prompt=config.system_prompt,
+            max_history=config.max_history_messages
+        )
+        logger.info("✅ ConversationManager инициализирован")
         
-        logger.info("Отправка тестового запроса...")
-        response = await llm_client.get_response(test_messages)
+        # Тестовый диалог
+        test_user_id = 12345
         
-        logger.info(f"✅ Ответ получен: {response}")
+        logger.info("\n--- Сообщение 1 ---")
+        response1 = await conversation_manager.process_message(
+            test_user_id, 
+            "Привет! Как тебя зовут?"
+        )
+        logger.info(f"Ответ 1: {response1}")
+        
+        logger.info("\n--- Сообщение 2 ---")
+        response2 = await conversation_manager.process_message(
+            test_user_id,
+            "Какая сейчас погода в Москве?"
+        )
+        logger.info(f"Ответ 2: {response2}")
+        
+        logger.info("\n--- Сообщение 3 ---")
+        response3 = await conversation_manager.process_message(
+            test_user_id,
+            "А что ты мне говорил о своем имени?"
+        )
+        logger.info(f"Ответ 3: {response3}")
+        
+        logger.info("\n✅ Тест завершен: диалог из 3 сообщений успешно обработан")
+        
+        # Тест очистки истории
+        logger.info("\n--- Тест clear_history ---")
+        conversation_manager.clear_history(test_user_id)
+        logger.info("✅ История очищена")
         
     except ValueError as e:
         logger.error(f"❌ Ошибка конфигурации: {e}")
@@ -54,7 +83,7 @@ async def test_llm_client():
 
 def main():
     """Запуск тестирования"""
-    asyncio.run(test_llm_client())
+    asyncio.run(test_conversation_manager())
 
 
 if __name__ == "__main__":
