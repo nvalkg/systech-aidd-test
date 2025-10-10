@@ -2,8 +2,7 @@
 import logging
 import asyncio
 from config import Config
-from llm_client import LLMClient
-from conversation_manager import ConversationManager
+from telegram_bot import TelegramBot
 
 
 # Настройка логирования
@@ -16,76 +15,37 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-async def test_conversation_manager():
-    """Тестирование ConversationManager"""
+async def main():
+    """Запуск Telegram бота"""
     try:
-        logger.info("=== Тест Conversation Manager ===")
+        logger.info("=== Запуск Telegram Bot ===")
         
         # Загрузка конфигурации
         config = Config()
         logger.info("✅ Конфигурация загружена")
         
-        # Инициализация LLM клиента
-        llm_client = LLMClient(
-            api_key=config.openrouter_key,
-            model=config.default_model,
-            max_tokens=config.max_tokens,
-            temperature=config.temperature
-        )
-        logger.info("✅ LLM клиент инициализирован")
+        # Инициализация Telegram бота
+        telegram_bot = TelegramBot(token=config.telegram_token)
+        logger.info("✅ Telegram бот инициализирован")
         
-        # Инициализация ConversationManager
-        conversation_manager = ConversationManager(
-            llm_client=llm_client,
-            system_prompt=config.system_prompt,
-            max_history=config.max_history_messages
-        )
-        logger.info("✅ ConversationManager инициализирован")
-        
-        # Тестовый диалог
-        test_user_id = 12345
-        
-        logger.info("\n--- Сообщение 1 ---")
-        response1 = await conversation_manager.process_message(
-            test_user_id, 
-            "Привет! Как тебя зовут?"
-        )
-        logger.info(f"Ответ 1: {response1}")
-        
-        logger.info("\n--- Сообщение 2 ---")
-        response2 = await conversation_manager.process_message(
-            test_user_id,
-            "Какая сейчас погода в Москве?"
-        )
-        logger.info(f"Ответ 2: {response2}")
-        
-        logger.info("\n--- Сообщение 3 ---")
-        response3 = await conversation_manager.process_message(
-            test_user_id,
-            "А что ты мне говорил о своем имени?"
-        )
-        logger.info(f"Ответ 3: {response3}")
-        
-        logger.info("\n✅ Тест завершен: диалог из 3 сообщений успешно обработан")
-        
-        # Тест очистки истории
-        logger.info("\n--- Тест clear_history ---")
-        conversation_manager.clear_history(test_user_id)
-        logger.info("✅ История очищена")
+        # Запуск polling
+        logger.info("🚀 Бот запущен! Нажмите Ctrl+C для остановки")
+        await telegram_bot.start_polling()
         
     except ValueError as e:
         logger.error(f"❌ Ошибка конфигурации: {e}")
         exit(1)
+    except KeyboardInterrupt:
+        logger.info("⏹️ Получен сигнал остановки")
     except Exception as e:
         logger.error(f"❌ Ошибка: {e}")
         exit(1)
-
-
-def main():
-    """Запуск тестирования"""
-    asyncio.run(test_conversation_manager())
+    finally:
+        if 'telegram_bot' in locals():
+            await telegram_bot.stop()
+        logger.info("Бот остановлен")
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
 
