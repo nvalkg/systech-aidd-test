@@ -5,7 +5,7 @@
 | Итерация | Статус | Описание | Дата завершения |
 |----------|--------|----------|-----------------|
 | 1️⃣ Подготовка и конфигурация | ✅ Done | Инициализация проекта и настройка | 2025-10-10 |
-| 2️⃣ LLM Client | ⏳ Pending | Интеграция с OpenRouter | - |
+| 2️⃣ LLM Client | ✅ Done | Интеграция с OpenRouter | 2025-10-10 |
 | 3️⃣ Conversation Manager | ⏳ Pending | Управление диалогами | - |
 | 4️⃣ Telegram Bot | ⏳ Pending | Базовая интеграция | - |
 | 5️⃣ Интеграция | ⏳ Pending | Полная связка компонентов | - |
@@ -61,11 +61,11 @@ LOG_LEVEL=INFO
 **Цель:** Интеграция с OpenRouter через openai client
 
 #### Задачи:
-- [ ] Создать `src/llm_client.py` с классом `LLMClient`
-- [ ] Инициализация openai client с `base_url` для OpenRouter
-- [ ] Реализовать async метод `get_response(messages: list) -> str`
-- [ ] Добавить обработку ошибок и логирование
-- [ ] Создать тестовый скрипт в `main.py` для проверки LLM
+- [x] Создать `src/llm_client.py` с классом `LLMClient`
+- [x] Инициализация openai client с `base_url` для OpenRouter
+- [x] Реализовать async метод `get_response(messages: list) -> str`
+- [x] Добавить обработку ошибок и логирование
+- [x] Создать тестовый скрипт в `main.py` для проверки LLM
 
 **Тест:** Отправить тестовый запрос в OpenRouter и получить ответ
 
