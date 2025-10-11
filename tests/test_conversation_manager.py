@@ -1,7 +1,8 @@
 """Тесты для модуля conversation_manager"""
 
-import pytest
 from unittest.mock import AsyncMock
+
+import pytest
 
 from src.conversation_manager import ConversationManager
 
@@ -56,3 +57,40 @@ def test_clear_history(mock_llm_client):
     manager.clear_history(123)
     assert manager.storage.get_context(123) is None
 
+
+class TestGetRoleDescription:
+    """Тесты для метода get_role_description"""
+
+    def test_get_role_description(self, mock_llm_client) -> None:
+        """Тест: получение описания роли"""
+        # Arrange
+        system_prompt = "Роль: Test Assistant\n\nYou are a test assistant."
+        manager = ConversationManager(mock_llm_client, system_prompt)
+
+        # Act
+        description = manager.get_role_description()
+
+        # Assert
+        assert isinstance(description, str)
+        assert len(description) > 0
+        # Должно содержать информацию о роли
+        assert "роль" in description.lower() or "role" in description.lower()
+
+    def test_get_role_description_integration(self, mock_llm_client) -> None:
+        """Тест: интеграция с PromptLoader для получения описания роли"""
+        # Arrange
+        specialized_prompt = """Роль: Python Code Reviewer Expert
+
+Ты - опытный Python разработчик с 10+ годами опыта, специализирующийся на code review.
+
+Твои принципы:
+- SOLID, DRY, KISS - основа твоих рекомендаций"""
+
+        manager = ConversationManager(mock_llm_client, specialized_prompt)
+
+        # Act
+        description = manager.get_role_description()
+
+        # Assert
+        assert "Python Code Reviewer Expert" in description
+        assert "🤖" in description  # Emoji должно быть в форматировании
