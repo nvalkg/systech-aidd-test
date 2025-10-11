@@ -26,6 +26,7 @@ WELCOME_TEXT = """👋 Привет! Я LLM-ассистент на основе
 
 Доступные команды:
 /help - справка по использованию
+/role - показать роль и специализацию бота
 /clear - очистить историю диалога
 /start - показать это сообщение"""
 
@@ -39,6 +40,7 @@ HELP_TEXT = """ℹ️ Справка по использованию
 Доступные команды:
 /start - приветствие и описание
 /help - эта справка
+/role - показать роль и специализацию бота
 /clear - очистить историю диалога
 
 ⚠️ Ограничения:
@@ -51,6 +53,8 @@ HELP_TEXT = """ℹ️ Справка по использованию
 CLEAR_TEXT = """🗑️ История диалога очищена!
 
 Начнем общение с чистого листа. Напиши мне что-нибудь, и я отвечу."""
+
+ROLE_COMMAND_TEXT = ""  # Будет заполнен динамически из ConversationManager
 
 ERROR_MESSAGE_TOO_LONG = """⚠️ Сообщение слишком длинное ({length} символов).
 Максимальная длина: {max_length} символов.
@@ -84,6 +88,7 @@ class TelegramBot:
         self.dp.message.register(self.cmd_start, Command("start"))
         self.dp.message.register(self.cmd_help, Command("help"))
         self.dp.message.register(self.cmd_clear, Command("clear"))
+        self.dp.message.register(self.cmd_role, Command("role"))
 
         # Обработка всех текстовых сообщений (должен быть последним)
         self.dp.message.register(self.handle_message)
@@ -151,6 +156,22 @@ class TelegramBot:
 
         await message.answer(CLEAR_TEXT)
         logger.info(f"История очищена для user {user_id}")
+
+    async def cmd_role(self, message: Message) -> None:
+        """
+        Обработчик команды /role - показать роль и специализацию бота
+
+        Args:
+            message: Сообщение от пользователя
+        """
+        user_id, username = self._get_user_info(message)
+        logger.info(f"Команда /role от user {user_id} (@{username})")
+
+        # Получаем описание роли из ConversationManager
+        role_description = self.conversation_manager.get_role_description()
+
+        await message.answer(role_description)
+        logger.info(f"Отправлена информация о роли user {user_id}")
 
     async def handle_message(self, message: Message) -> None:
         """

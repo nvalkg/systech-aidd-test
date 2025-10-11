@@ -1,8 +1,11 @@
 """Конфигурация приложения из переменных окружения"""
 
+import logging
 import os
 
 from dotenv import load_dotenv
+
+logger = logging.getLogger(__name__)
 
 
 class Config:
@@ -21,8 +24,12 @@ class Config:
         self.max_tokens: int = self._parse_int("MAX_TOKENS", 1000)
         self.temperature: float = self._parse_float("TEMPERATURE", 0.7)
         self.max_history_messages: int = self._parse_int("MAX_HISTORY_MESSAGES", 10)
-        self.system_prompt: str = os.getenv("SYSTEM_PROMPT", "You are a helpful AI assistant.")
         self.log_level: str = os.getenv("LOG_LEVEL", "INFO")
+
+        # Системный промпт: загрузка из файла или текста
+        self.system_prompt_file: str | None = os.getenv("SYSTEM_PROMPT_FILE")
+        self.system_prompt_text: str = os.getenv("SYSTEM_PROMPT", "You are a helpful AI assistant.")
+        self.system_prompt: str = self._load_system_prompt()
 
     def _get_required_env(self, key: str) -> str:
         """Получить обязательную переменную окружения"""
@@ -46,3 +53,23 @@ class Config:
             return float(value)
         except ValueError as e:
             raise ValueError(f"{key} должно быть числом, получено: {value!r}") from e
+
+    def _load_system_prompt(self) -> str:
+        """
+        Загрузка системного промпта с приоритетом: FILE → TEXT → default
+
+        Returns:
+            str: Загруженный системный промпт
+        """
+        if self.system_prompt_file:
+            try:
+                with open(self.system_prompt_file, encoding="utf-8") as f:
+                    content = f.read().strip()
+                    logger.info(f"Системный промпт загружен из файла: {self.system_prompt_file}")
+                    return content
+            except FileNotFoundError:
+                logger.warning(
+                    f"Файл {self.system_prompt_file} не найден, используется SYSTEM_PROMPT"
+                )
+
+        return self.system_prompt_text

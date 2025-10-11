@@ -14,7 +14,8 @@ ENV/
 .env
 
 # IDE
-.vscode/
+# .vscode/ - конфигурация проекта для VSCode/Cursor (включена в репозиторий)
+# Локальные настройки можно добавить в .vscode/*.local.json
 .idea/
 *.swp
 *.swo

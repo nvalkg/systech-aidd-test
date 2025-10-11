@@ -5,6 +5,7 @@ import logging
 from .history_storage import HistoryStorage
 from .llm_client import LLMClient
 from .message_formatter import MessageFormatter
+from .prompt_loader import PromptLoader
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +26,7 @@ class ConversationManager:
         self.system_prompt = system_prompt
         self.storage = HistoryStorage(max_history)
         self.formatter = MessageFormatter()
+        self.prompt_loader = PromptLoader(prompt_text=system_prompt)
 
         logger.info(f"ConversationManager инициализирован (max_history={max_history})")
 
@@ -57,3 +59,12 @@ class ConversationManager:
     def clear_history(self, user_id: int) -> None:
         """Очистить историю диалога пользователя"""
         self.storage.clear(user_id)
+
+    def get_role_description(self) -> str:
+        """
+        Получить описание роли бота для команды /role
+
+        Returns:
+            str: Форматированное описание роли
+        """
+        return self.prompt_loader.get_role_description()

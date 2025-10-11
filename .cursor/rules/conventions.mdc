@@ -1,5 +1,5 @@
 ---
-alwaysApply: false
+alwaysApply: true
 ---
 # Conventions - Правила разработки кода
 
@@ -219,7 +219,7 @@ def test_config_invalid_max_tokens(valid_env, monkeypatch):
     """Тест: ValueError при невалидном MAX_TOKENS"""
     # Arrange
     monkeypatch.setenv("MAX_TOKENS", "not_a_number")
-    
+
     # Act & Assert
     with pytest.raises(ValueError, match="MAX_TOKENS должно быть целым числом"):
         Config()
@@ -240,26 +240,26 @@ async def test_get_response_success(llm_client: LLMClient) -> None:
     # Arrange: Подготовка mock ответа
     mock_message = Mock()
     mock_message.content = "Test response from LLM"
-    
+
     mock_choice = Mock()
     mock_choice.message = mock_message
-    
+
     mock_usage = Mock()
     mock_usage.total_tokens = 50
-    
+
     mock_response = Mock()
     mock_response.choices = [mock_choice]
     mock_response.usage = mock_usage
-    
+
     # Act: Мокирование async вызова API
     with patch.object(
         llm_client.client.chat.completions, "create", new_callable=AsyncMock
     ) as mock_create:
         mock_create.return_value = mock_response
-        
+
         messages = [{"role": "user", "content": "Hello"}]
         result = await llm_client.get_response(messages)
-        
+
         # Assert
         assert result == "Test response from LLM"
         mock_create.assert_called_once_with(
@@ -288,9 +288,9 @@ async def test_get_response_api_error(llm_client: LLMClient) -> None:
     ) as mock_create:
         # Симулируем API ошибку
         mock_create.side_effect = Exception("API Error: Rate limit exceeded")
-        
+
         messages = [{"role": "user", "content": "Hello"}]
-        
+
         # Проверяем, что исключение пробрасывается
         with pytest.raises(Exception, match="API Error: Rate limit exceeded"):
             await llm_client.get_response(messages)
@@ -312,16 +312,16 @@ async def test_main_success() -> None:
         mock_config.openrouter_key = "test-key"
         mock_config.default_model = "test-model"
         mock_config_class.return_value = mock_config
-        
+
         # Настройка mock TelegramBot
         mock_bot = Mock()
         mock_bot.start_polling = AsyncMock(side_effect=KeyboardInterrupt())
         mock_bot.stop = AsyncMock()
         mock_bot_class.return_value = mock_bot
-        
+
         # Act
         await main()
-        
+
         # Assert
         mock_config_class.assert_called_once()
         mock_llm_class.assert_called_once()
@@ -353,11 +353,11 @@ class ConversationManager:
     """Управляет диалогом, хранит историю, форматирует сообщения"""
     def __init__(self, llm_client, system_prompt, max_history=10):
         self.contexts: dict[int, ConversationContext] = {}  # Хранение
-        
+
     def add_user_message(self, user_id, text):
         """Сохранение + обрезка истории"""
         # 142 строки кода с 3 разными ответственностями
-        
+
     def get_messages_for_llm(self, user_id) -> list[dict]:
         """Форматирование для API"""
         # Еще одна ответственность
@@ -393,7 +393,7 @@ class ConversationManager:
     def __init__(self, llm_client, system_prompt, max_history):
         self.storage = HistoryStorage(max_history)
         self.formatter = MessageFormatter()
-    
+
     async def process_message(self, user_id, text) -> str:
         self.storage.add_message(user_id, text, self.system_prompt)
         context = self.storage.get_context(user_id)
@@ -418,7 +418,7 @@ async def cmd_start(self, message: Message):
     user_id = message.from_user.id  # Повторяется 4 раза
     username = message.from_user.username or message.from_user.first_name
     logger.info(f"Команда /start от user {user_id} (@{username})")
-    
+
     welcome_text = (  # Длинные строки в коде
         "👋 Привет! Я LLM-ассистент...\n\n"
         "Я могу:\n"
@@ -444,16 +444,16 @@ class TelegramBot:
         """Единственное место извлечения user info"""
         if not message.from_user:
             raise ValueError("Message has no user information")
-        
+
         user_id = message.from_user.id
         username = message.from_user.username or message.from_user.first_name or "Unknown"
         return user_id, username
-    
+
     async def cmd_start(self, message: Message) -> None:
         user_id, username = self._get_user_info(message)  # Переиспользование
         logger.info(f"Команда /start от user {user_id} (@{username})")
         await message.answer(WELCOME_TEXT)  # Константа
-    
+
     async def cmd_help(self, message: Message) -> None:
         user_id, username = self._get_user_info(message)  # Переиспользование
         logger.info(f"Команда /help от user {user_id} (@{username})")
@@ -557,7 +557,6 @@ git push --force-with-lease
 
 ---
 
-**Версия:** 2.0  
-**Статус:** Готово к использованию  
+**Версия:** 2.0
+**Статус:** Готово к использованию
 **Обновлено:** 2025-10-11 (добавлен CI/CD раздел)
-

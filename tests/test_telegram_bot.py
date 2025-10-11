@@ -1,17 +1,17 @@
 """Тесты для модуля telegram_bot"""
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock
 
+import pytest
 from aiogram.types import Message, User
 
 from src.telegram_bot import (
-    TelegramBot,
-    WELCOME_TEXT,
-    HELP_TEXT,
     CLEAR_TEXT,
     ERROR_MESSAGE_GENERAL,
+    HELP_TEXT,
     MAX_MESSAGE_LENGTH,
+    WELCOME_TEXT,
+    TelegramBot,
 )
 
 
@@ -153,9 +153,7 @@ async def test_handle_message_success(telegram_bot, mock_message):
     await telegram_bot.handle_message(mock_message)
 
     # Проверяем, что сообщение обработано
-    telegram_bot.conversation_manager.process_message.assert_called_once_with(
-        12345, "Hello bot"
-    )
+    telegram_bot.conversation_manager.process_message.assert_called_once_with(12345, "Hello bot")
     # Проверяем, что отправлен ответ
     mock_message.answer.assert_called_once_with("Test response from LLM")
 
@@ -163,9 +161,7 @@ async def test_handle_message_success(telegram_bot, mock_message):
 @pytest.mark.asyncio
 async def test_handle_message_error(telegram_bot, mock_message):
     """Тест: обработка ошибки при работе с ConversationManager"""
-    telegram_bot.conversation_manager.process_message.side_effect = Exception(
-        "Test error"
-    )
+    telegram_bot.conversation_manager.process_message.side_effect = Exception("Test error")
     mock_message.text = "Hello bot"
 
     await telegram_bot.handle_message(mock_message)
@@ -173,3 +169,74 @@ async def test_handle_message_error(telegram_bot, mock_message):
     # Проверяем, что отправлена ошибка
     mock_message.answer.assert_called_once_with(ERROR_MESSAGE_GENERAL)
 
+
+class TestCmdRole:
+    """Тесты для команды /role"""
+
+    @pytest.mark.asyncio
+    async def test_cmd_role_default_prompt(self, telegram_bot, mock_message) -> None:
+        """Тест: команда /role с дефолтным промптом"""
+        # Arrange: мокируем get_role_description для дефолтного промпта
+        telegram_bot.conversation_manager.get_role_description = MagicMock(
+            return_value="🤖 Моя роль: AI Assistant\n\nYou are a helpful AI assistant."
+        )
+
+        # Act
+        await telegram_bot.cmd_role(mock_message)
+
+        # Assert
+        mock_message.answer.assert_called_once()
+        response_text = mock_message.answer.call_args[0][0]
+        assert "🤖 Моя роль: AI Assistant" in response_text
+        assert "helpful AI assistant" in response_text
+
+    @pytest.mark.asyncio
+    async def test_cmd_role_specialized_prompt(self, telegram_bot, mock_message) -> None:
+        """Тест: команда /role со специализированным промптом"""
+        # Arrange: мокируем get_role_description для специализированного промпта
+        specialized_description = """🤖 Моя роль: Python Code Reviewer Expert
+
+Ты - опытный Python разработчик с 10+ годами опыта."""
+
+        telegram_bot.conversation_manager.get_role_description = MagicMock(
+            return_value=specialized_description
+        )
+
+        # Act
+        await telegram_bot.cmd_role(mock_message)
+
+        # Assert
+        mock_message.answer.assert_called_once()
+        response_text = mock_message.answer.call_args[0][0]
+        assert "Python Code Reviewer Expert" in response_text
+        assert "опытный Python разработчик" in response_text
+
+    @pytest.mark.asyncio
+    async def test_cmd_role_formatting(self, telegram_bot, mock_message) -> None:
+        """Тест: проверка форматирования ответа команды /role"""
+        # Arrange
+        role_description = "🤖 Моя роль: Test Role\n\nTest description."
+        telegram_bot.conversation_manager.get_role_description = MagicMock(
+            return_value=role_description
+        )
+
+        # Act
+        await telegram_bot.cmd_role(mock_message)
+
+        # Assert
+        mock_message.answer.assert_called_once_with(role_description)
+
+    @pytest.mark.asyncio
+    async def test_cmd_role_user_info_logging(self, telegram_bot, mock_message) -> None:
+        """Тест: команда /role логирует информацию о пользователе"""
+        # Arrange
+        telegram_bot.conversation_manager.get_role_description = MagicMock(
+            return_value="Test role description"
+        )
+
+        # Act
+        await telegram_bot.cmd_role(mock_message)
+
+        # Assert: проверяем, что не было ошибок при извлечении user_info
+        # (метод _get_user_info должен вызваться внутри cmd_role)
+        mock_message.answer.assert_called_once()
