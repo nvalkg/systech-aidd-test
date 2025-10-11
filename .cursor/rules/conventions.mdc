@@ -1,5 +1,5 @@
 ---
-alwaysApply: true
+alwaysApply: false
 ---
 # Conventions - Правила разработки кода
 
@@ -151,8 +151,413 @@ messages = [
 - Type hints для публичных методов
 - Следуем PEP 8
 
+## Инструменты качества кода
+
+### Ruff (форматтер + линтер)
+- **Форматирование:** `make format` - автоматическое форматирование кода
+- **Линтинг:** `make lint` - проверка на ошибки и стиль
+- **Правила:** E, W, F, I, N, B, UP, C90
+- **Line length:** 100 символов
+- **Автоматическое исправление:** `ruff check --fix`
+
+### Mypy (type checker)
+- **Проверка типов:** `make typecheck`
+- **Режим:** strict (disallow_untyped_defs = true)
+- **Требование:** все публичные методы с type hints
+- **Цель:** 100% type coverage
+
+### Pytest (тесты)
+- **Запуск тестов:** `make test`
+- **Coverage:** цель >80%
+- **Async тесты:** pytest-asyncio
+- **Моки:** unittest.mock для зависимостей
+
+### Комплексная проверка
+```bash
+make quality  # format + lint + typecheck + test
+```
+
+### Workflow проверок
+1. Написать код
+2. `make format` - автоформатирование
+3. `make lint` - проверить ошибки
+4. `make typecheck` - проверить типы
+5. `make test` - запустить тесты
+6. `make quality` - финальная проверка перед коммитом
+
+## Тестирование
+
+### Структура тестов
+```
+tests/
+├── conftest.py          # Фикстуры pytest
+├── test_config.py       # Тесты для config.py
+├── test_llm_client.py   # Тесты для llm_client.py
+└── ...
+```
+
+### Именование тестов
+- Файлы: `test_<module_name>.py`
+- Функции: `test_<what_is_tested>`
+- Используем понятные имена, описывающие сценарий
+
+### Фикстуры
+- `conftest.py` - общие фикстуры для всех тестов
+- `monkeypatch` - для подмены переменных окружения
+- Используем фикстуры для переиспользования кода
+
+### Принципы тестирования
+- **Arrange-Act-Assert** - подготовка, действие, проверка
+- **Один тест = один сценарий**
+- **Явные сообщения об ошибках** - используем match в pytest.raises
+- **Изоляция** - тесты не зависят друг от друга
+- **Мокирование** - мокируем внешние зависимости (load_dotenv, API и т.д.)
+
+### Пример теста
+```python
+def test_config_invalid_max_tokens(valid_env, monkeypatch):
+    """Тест: ValueError при невалидном MAX_TOKENS"""
+    # Arrange
+    monkeypatch.setenv("MAX_TOKENS", "not_a_number")
+    
+    # Act & Assert
+    with pytest.raises(ValueError, match="MAX_TOKENS должно быть целым числом"):
+        Config()
+```
+
+### Тестирование async кода
+
+#### pytest-asyncio
+- Используем `@pytest.mark.asyncio` для async функций
+- Фикстуры могут быть async
+- AsyncMock для мокирования async методов
+
+#### Пример async теста
+```python
+@pytest.mark.asyncio
+async def test_get_response_success(llm_client: LLMClient) -> None:
+    """Тест успешного получения ответа от LLM"""
+    # Arrange: Подготовка mock ответа
+    mock_message = Mock()
+    mock_message.content = "Test response from LLM"
+    
+    mock_choice = Mock()
+    mock_choice.message = mock_message
+    
+    mock_usage = Mock()
+    mock_usage.total_tokens = 50
+    
+    mock_response = Mock()
+    mock_response.choices = [mock_choice]
+    mock_response.usage = mock_usage
+    
+    # Act: Мокирование async вызова API
+    with patch.object(
+        llm_client.client.chat.completions, "create", new_callable=AsyncMock
+    ) as mock_create:
+        mock_create.return_value = mock_response
+        
+        messages = [{"role": "user", "content": "Hello"}]
+        result = await llm_client.get_response(messages)
+        
+        # Assert
+        assert result == "Test response from LLM"
+        mock_create.assert_called_once_with(
+            model="test-model",
+            messages=messages,
+            max_tokens=100,
+            temperature=0.7,
+        )
+```
+
+### Мокирование внешних API
+
+#### Стратегия мокирования
+1. **Unit тесты** - мокируем все внешние зависимости
+2. **AsyncMock** для async методов
+3. **patch.object** для точечной подмены
+4. **side_effect** для симуляции ошибок
+
+#### Пример мокирования API ошибки
+```python
+@pytest.mark.asyncio
+async def test_get_response_api_error(llm_client: LLMClient) -> None:
+    """Тест обработки ошибки API"""
+    with patch.object(
+        llm_client.client.chat.completions, "create", new_callable=AsyncMock
+    ) as mock_create:
+        # Симулируем API ошибку
+        mock_create.side_effect = Exception("API Error: Rate limit exceeded")
+        
+        messages = [{"role": "user", "content": "Hello"}]
+        
+        # Проверяем, что исключение пробрасывается
+        with pytest.raises(Exception, match="API Error: Rate limit exceeded"):
+            await llm_client.get_response(messages)
+```
+
+#### Пример мокирования зависимостей в main()
+```python
+@pytest.mark.asyncio
+async def test_main_success() -> None:
+    """Тест успешного запуска приложения"""
+    with (
+        patch("src.main.Config") as mock_config_class,
+        patch("src.main.LLMClient") as mock_llm_class,
+        patch("src.main.ConversationManager") as mock_conv_class,
+        patch("src.main.TelegramBot") as mock_bot_class,
+    ):
+        # Настройка mock Config
+        mock_config = Mock()
+        mock_config.openrouter_key = "test-key"
+        mock_config.default_model = "test-model"
+        mock_config_class.return_value = mock_config
+        
+        # Настройка mock TelegramBot
+        mock_bot = Mock()
+        mock_bot.start_polling = AsyncMock(side_effect=KeyboardInterrupt())
+        mock_bot.stop = AsyncMock()
+        mock_bot_class.return_value = mock_bot
+        
+        # Act
+        await main()
+        
+        # Assert
+        mock_config_class.assert_called_once()
+        mock_llm_class.assert_called_once()
+        mock_bot.stop.assert_called_once()
+```
+
+### Coverage метрики
+- **Цель:** >80% общий coverage
+- **Инструмент:** pytest-cov
+- **Отчет:** `make test` показывает coverage с missing lines
+- **HTML отчет:** `pytest --cov=src --cov-report=html` (в htmlcov/)
+
+#### Интерпретация coverage
+- **100%** - критичные модули (config, models)
+- **>90%** - бизнес-логика (llm_client, conversation_manager)
+- **>80%** - интеграционный код (telegram_bot, main)
+- **Пропускаем:** `if __name__ == "__main__"`, entry points
+
+## SOLID принципы
+
+### Single Responsibility Principle (SRP)
+**Каждый класс должен иметь только одну причину для изменения.**
+
+#### Пример рефакторинга: ConversationManager
+
+**До рефакторинга (нарушение SRP):**
+```python
+class ConversationManager:
+    """Управляет диалогом, хранит историю, форматирует сообщения"""
+    def __init__(self, llm_client, system_prompt, max_history=10):
+        self.contexts: dict[int, ConversationContext] = {}  # Хранение
+        
+    def add_user_message(self, user_id, text):
+        """Сохранение + обрезка истории"""
+        # 142 строки кода с 3 разными ответственностями
+        
+    def get_messages_for_llm(self, user_id) -> list[dict]:
+        """Форматирование для API"""
+        # Еще одна ответственность
+```
+
+**После рефакторинга (соблюдение SRP):**
+```python
+# 1. Модели данных (models.py)
+@dataclass
+class ConversationContext:
+    """Структура данных"""
+    user_id: int
+    messages: list[UserMessage]
+    responses: list[LLMResponse]
+    system_prompt: str
+
+# 2. Хранилище (history_storage.py)
+class HistoryStorage:
+    """Только хранение и управление историей"""
+    def add_message(self, user_id, text, system_prompt): ...
+    def get_context(self, user_id): ...
+    def _trim_history(self, user_id): ...
+
+# 3. Форматирование (message_formatter.py)
+class MessageFormatter:
+    """Только форматирование для API"""
+    @staticmethod
+    def format_for_llm(context, system_prompt) -> list[dict]: ...
+
+# 4. Оркестратор (conversation_manager.py)
+class ConversationManager:
+    """Только координация компонентов"""
+    def __init__(self, llm_client, system_prompt, max_history):
+        self.storage = HistoryStorage(max_history)
+        self.formatter = MessageFormatter()
+    
+    async def process_message(self, user_id, text) -> str:
+        self.storage.add_message(user_id, text, self.system_prompt)
+        context = self.storage.get_context(user_id)
+        messages = self.formatter.format_for_llm(context, self.system_prompt)
+        return await self.llm_client.get_response(messages)
+```
+
+**Результат:**
+- ✅ Код сократился с 142 до 92 строк
+- ✅ Каждый компонент легко тестируется отдельно
+- ✅ Изменения в одной области не затрагивают другие
+- ✅ Coverage: 100% для всех компонентов
+
+### Don't Repeat Yourself (DRY)
+**Не повторяйся - каждая логика должна иметь единственное представление в системе.**
+
+#### Пример рефакторинга: TelegramBot
+
+**До рефакторинга (нарушение DRY):**
+```python
+async def cmd_start(self, message: Message):
+    user_id = message.from_user.id  # Повторяется 4 раза
+    username = message.from_user.username or message.from_user.first_name
+    logger.info(f"Команда /start от user {user_id} (@{username})")
+    
+    welcome_text = (  # Длинные строки в коде
+        "👋 Привет! Я LLM-ассистент...\n\n"
+        "Я могу:\n"
+        # ... 20 строк текста
+    )
+    await message.answer(welcome_text)
+
+async def cmd_help(self, message: Message):
+    user_id = message.from_user.id  # Дублирование!
+    username = message.from_user.username or message.from_user.first_name
+    # ... и так в каждом методе
+```
+
+**После рефакторинга (соблюдение DRY):**
+```python
+# Константы вынесены в начало файла
+WELCOME_TEXT = """👋 Привет! Я LLM-ассистент..."""
+HELP_TEXT = """ℹ️ Справка по использованию..."""
+ERROR_MESSAGE_GENERAL = """❌ Извините, произошла ошибка..."""
+
+class TelegramBot:
+    def _get_user_info(self, message: Message) -> tuple[int, str]:
+        """Единственное место извлечения user info"""
+        if not message.from_user:
+            raise ValueError("Message has no user information")
+        
+        user_id = message.from_user.id
+        username = message.from_user.username or message.from_user.first_name or "Unknown"
+        return user_id, username
+    
+    async def cmd_start(self, message: Message) -> None:
+        user_id, username = self._get_user_info(message)  # Переиспользование
+        logger.info(f"Команда /start от user {user_id} (@{username})")
+        await message.answer(WELCOME_TEXT)  # Константа
+    
+    async def cmd_help(self, message: Message) -> None:
+        user_id, username = self._get_user_info(message)  # Переиспользование
+        logger.info(f"Команда /help от user {user_id} (@{username})")
+        await message.answer(HELP_TEXT)  # Константа
+```
+
+**Результат:**
+- ✅ Код стал короче и чище
+- ✅ Type hints добавлены везде (`-> None`, `-> tuple[int, str]`)
+- ✅ Безопасная работа с `message.from_user` (проверка на None)
+- ✅ Легкое изменение текстов - только в одном месте
+- ✅ Coverage: 94% для telegram_bot.py
+
+## CI/CD
+
+### GitHub Actions
+
+Автоматические проверки качества при каждом push и PR:
+
+**Файл:** `.github/workflows/quality.yml`
+
+**Триггеры:**
+- Push в ветки: main, develop, day03-refactor
+- Pull Request в: main, develop
+
+**Шаги проверки:**
+```yaml
+1. Setup: uv + Python 3.11
+2. Install: uv sync --dev
+3. Format check: ruff format src/ --check
+4. Lint: ruff check src/
+5. Typecheck: mypy src/
+6. Tests: pytest --cov=src --cov-report=xml
+```
+
+### Локальная проверка перед push
+
+**Обязательно запускайте:**
+```bash
+make quality  # Все проверки разом
+```
+
+Это должно пройти **без ошибок** перед созданием PR.
+
+### Требования к PR
+
+- ✅ All checks passed в GitHub Actions
+- ✅ Coverage не упал (<95% текущий)
+- ✅ Нет новых ошибок линтера/mypy
+- ✅ Все тесты passed
+- ✅ Type hints для нового кода
+- ✅ Тесты для нового функционала
+
+### Badges в README
+
+Используем badges для визуализации статуса:
+
+```markdown
+![Python Version](https://img.shields.io/badge/python-3.11+-blue.svg)
+![CI Status](https://img.shields.io/badge/CI-passing-brightgreen.svg)
+![Coverage](https://img.shields.io/badge/coverage-95%25-brightgreen.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+```
+
+### Что делать если CI failed
+
+**Format check failed:**
+```bash
+make format
+git add .
+git commit --amend --no-edit
+git push --force-with-lease
+```
+
+**Lint/typecheck failed:**
+```bash
+make lint
+make typecheck
+# Исправить ошибки
+git add .
+git commit --amend --no-edit
+git push --force-with-lease
+```
+
+**Tests failed:**
+```bash
+make test
+# Исправить тесты или код
+git add .
+git commit --amend --no-edit
+git push --force-with-lease
+```
+
+### Преимущества CI/CD
+
+- ✅ Автоматическая проверка при каждом push
+- ✅ Предотвращение merge кода с ошибками
+- ✅ Контроль качества на уровне PR
+- ✅ Видимость статуса через badges
+- ✅ Единый стандарт качества для всех разработчиков
+
 ---
 
-**Версия:** 1.0  
-**Статус:** Готово к использованию
+**Версия:** 2.0  
+**Статус:** Готово к использованию  
+**Обновлено:** 2025-10-11 (добавлен CI/CD раздел)
 
