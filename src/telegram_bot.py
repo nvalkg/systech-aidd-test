@@ -152,7 +152,7 @@ class TelegramBot:
         logger.info(f"Команда /clear от user {user_id} (@{username})")
 
         # Очистка истории диалога
-        self.conversation_manager.clear_history(user_id)
+        await self.conversation_manager.clear_history(user_id)
 
         await message.answer(CLEAR_TEXT)
         logger.info(f"История очищена для user {user_id}")

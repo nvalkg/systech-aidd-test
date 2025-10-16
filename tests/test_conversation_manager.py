@@ -47,14 +47,15 @@ async def test_process_multiple_messages(mock_llm_client):
     assert len(context.responses) == 2
 
 
-def test_clear_history(mock_llm_client):
+@pytest.mark.asyncio
+async def test_clear_history(mock_llm_client):
     """Тест: Очистка истории"""
     manager = ConversationManager(mock_llm_client, "System prompt")
     manager.storage.add_message(123, "Hello", "System prompt")
 
     assert manager.storage.get_context(123) is not None
 
-    manager.clear_history(123)
+    await manager.clear_history(123)
     assert manager.storage.get_context(123) is None
 
 

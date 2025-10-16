@@ -5,6 +5,8 @@ import logging
 
 from .config import Config
 from .conversation_manager import ConversationManager
+from .database import create_engine
+from .db_history_storage import DatabaseHistoryStorage
 from .llm_client import LLMClient
 from .telegram_bot import TelegramBot
 
@@ -20,12 +22,17 @@ logger = logging.getLogger(__name__)
 
 async def main() -> None:
     """Запуск Telegram бота с полной интеграцией"""
+    engine = None
     try:
         logger.info("=== Запуск LLM-ассистента ===")
 
         # Загрузка конфигурации
         config = Config()
         logger.info("✅ Конфигурация загружена")
+
+        # Инициализация движка БД
+        engine = create_engine(config.database_url)
+        logger.info("✅ Движок БД инициализирован")
 
         # Инициализация LLM клиента
         llm_client = LLMClient(
@@ -36,11 +43,18 @@ async def main() -> None:
         )
         logger.info("✅ LLM клиент инициализирован")
 
+        # Инициализация хранилища с БД
+        storage = DatabaseHistoryStorage(
+            engine=engine,
+            max_history=config.max_history_messages,
+        )
+        logger.info("✅ DatabaseHistoryStorage инициализирован")
+
         # Инициализация ConversationManager
         conversation_manager = ConversationManager(
             llm_client=llm_client,
             system_prompt=config.system_prompt,
-            max_history=config.max_history_messages,
+            storage=storage,
         )
         logger.info("✅ ConversationManager инициализирован")
 
@@ -65,6 +79,9 @@ async def main() -> None:
     finally:
         if "telegram_bot" in locals():
             await telegram_bot.stop()
+        if engine:
+            await engine.dispose()
+            logger.info("Соединение с БД закрыто")
         logger.info("Бот остановлен")
 
 

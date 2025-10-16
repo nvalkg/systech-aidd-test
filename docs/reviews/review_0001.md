@@ -321,7 +321,7 @@ make dev
 
 **Файл/директория:** корень проекта
 **Проблема:**
-- В `docs/tasklist_tech_dept.md` упоминается "Pre-commit hooks: Не используем, запускаем `make quality` вручную"
+- В `docs/tasklists/tasklist-quality-sprint-0.md` упоминается "Pre-commit hooks: Не используем, запускаем `make quality` вручную"
 - Ручной запуск может быть забыт
 
 **Рекомендация:**

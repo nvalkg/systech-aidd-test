@@ -146,10 +146,10 @@ def test_my_function():
     """Тест: описание сценария"""
     # Arrange - подготовка
     obj = MyClass()
-    
+
     # Act - действие
     result = obj.my_function()
-    
+
     # Assert - проверка
     assert result == expected_value
 ```
@@ -174,7 +174,7 @@ async def test_with_mock():
     """Тест с мокированием зависимостей"""
     mock_dependency = Mock()
     mock_dependency.method.return_value = "test"
-    
+
     # Для async методов используйте AsyncMock
     mock_async = AsyncMock()
     mock_async.async_method.return_value = "test"
@@ -306,10 +306,11 @@ make run
 
 Перед началом разработки изучите:
 
-1. [vision.md](docs/vision.md) - техническое видение проекта
-2. [conventions.mdc](.cursor/rules/conventions.mdc) - правила кодирования
-3. [workflow.mdc](.cursor/rules/workflow.mdc) - процесс разработки
-4. [tasklist_tech_dept.md](docs/tasklist_tech_dept.md) - план устранения технического долга
+1. [roadmap.md](docs/roadmap.md) - дорожная карта проекта
+2. [vision.md](docs/vision.md) - техническое видение проекта
+3. [conventions.mdc](.cursor/rules/conventions.mdc) - правила кодирования
+4. [workflow.mdc](.cursor/rules/workflow.mdc) - процесс разработки
+5. [tasklists/](docs/tasklists/) - детальные планы спринтов
 
 ## 🆘 Нужна помощь?
 
@@ -334,7 +335,6 @@ make run
 
 ---
 
-**Версия:** 1.0  
-**Создан:** 2025-10-11  
+**Версия:** 1.0
+**Создан:** 2025-10-11
 **Базируется на:** [workflow_tech_debt.mdc](.cursor/rules/workflow_tech_debt.mdc)
-

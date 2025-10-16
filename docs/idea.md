@@ -207,8 +207,8 @@ systech-aidd-test/
 ├── docs/
 │   ├── idea.md                  # Концепция проекта
 │   ├── vision.md                # Техническое видение
-│   ├── tasklist.md              # План разработки
-│   └── tasklist_tech_dept.md    # План tech debt
+│   ├── roadmap.md               # Дорожная карта проекта
+│   └── tasklists/               # Детальные планы спринтов
 ├── prompts/
 │   └── system_prompt.txt        # Системный промпт роли (планируется)
 ├── src/

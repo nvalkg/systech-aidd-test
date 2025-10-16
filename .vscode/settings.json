@@ -75,5 +75,15 @@
     },
 
     // Git
-    "git.ignoreLimitWarning": true
+    "git.ignoreLimitWarning": true,
+    "sqltools.connections": [
+        {
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "driver": "PostgreSQL",
+            "name": "Cursor",
+            "connectString": "postgresql+asyncpg://aidd:aidd_dev_password@localhost:5432/aidd"
+        }
+    ]
 }

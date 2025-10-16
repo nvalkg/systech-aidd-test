@@ -20,7 +20,7 @@ def mock_conversation_manager():
     """Мок ConversationManager"""
     manager = AsyncMock()
     manager.process_message = AsyncMock(return_value="Test response from LLM")
-    manager.clear_history = MagicMock()
+    manager.clear_history = AsyncMock()
     return manager
 
 

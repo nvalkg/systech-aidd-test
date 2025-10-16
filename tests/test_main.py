@@ -13,6 +13,8 @@ async def test_main_success() -> None:
     # Мокирование всех зависимостей
     with (
         patch("src.main.Config") as mock_config_class,
+        patch("src.main.create_engine") as mock_create_engine,
+        patch("src.main.DatabaseHistoryStorage") as mock_db_storage_class,
         patch("src.main.LLMClient") as mock_llm_class,
         patch("src.main.ConversationManager") as mock_conv_class,
         patch("src.main.TelegramBot") as mock_bot_class,
@@ -26,7 +28,13 @@ async def test_main_success() -> None:
         mock_config.telegram_token = "test-token"
         mock_config.system_prompt = "Test prompt"
         mock_config.max_history_messages = 10
+        mock_config.database_url = "sqlite+aiosqlite:///:memory:"
         mock_config_class.return_value = mock_config
+
+        # Настройка mock Engine
+        mock_engine = AsyncMock()
+        mock_engine.dispose = AsyncMock()
+        mock_create_engine.return_value = mock_engine
 
         # Настройка mock TelegramBot
         mock_bot = Mock()
@@ -39,12 +47,14 @@ async def test_main_success() -> None:
 
         # Проверки
         mock_config_class.assert_called_once()
+        mock_create_engine.assert_called_once_with("sqlite+aiosqlite:///:memory:")
         mock_llm_class.assert_called_once_with(
             api_key="test-key",
             model="test-model",
             max_tokens=100,
             temperature=0.7,
         )
+        mock_db_storage_class.assert_called_once()
         mock_conv_class.assert_called_once()
         mock_bot_class.assert_called_once()
         mock_bot.start_polling.assert_called_once()
@@ -73,6 +83,8 @@ async def test_main_keyboard_interrupt() -> None:
     """Тест обработки Ctrl+C (KeyboardInterrupt)"""
     with (
         patch("src.main.Config") as mock_config_class,
+        patch("src.main.create_engine") as mock_create_engine,
+        patch("src.main.DatabaseHistoryStorage"),
         patch("src.main.LLMClient"),
         patch("src.main.ConversationManager"),
         patch("src.main.TelegramBot") as mock_bot_class,
@@ -86,7 +98,13 @@ async def test_main_keyboard_interrupt() -> None:
         mock_config.telegram_token = "test-token"
         mock_config.system_prompt = "Test prompt"
         mock_config.max_history_messages = 10
+        mock_config.database_url = "sqlite+aiosqlite:///:memory:"
         mock_config_class.return_value = mock_config
+
+        # Настройка mock Engine
+        mock_engine = AsyncMock()
+        mock_engine.dispose = AsyncMock()
+        mock_create_engine.return_value = mock_engine
 
         # Настройка mock TelegramBot с KeyboardInterrupt
         mock_bot = Mock()
@@ -181,4 +199,3 @@ async def test_main_bot_stops_on_error() -> None:
 
         # Проверка, что stop был вызван
         mock_bot.stop.assert_called_once()
-

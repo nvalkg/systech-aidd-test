@@ -1,6 +1,10 @@
 """Фикстуры для pytest"""
 
 import pytest
+import pytest_asyncio
+from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
+
+from src.database import metadata
 
 
 @pytest.fixture
@@ -38,3 +42,20 @@ def valid_env(monkeypatch):
     monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "test_telegram_token")
     monkeypatch.setenv("OPENROUTER_API_KEY", "test_openrouter_key")
 
+
+@pytest_asyncio.fixture
+async def test_db_engine() -> AsyncEngine:
+    """Создать тестовый движок БД с SQLite in-memory"""
+    engine = create_async_engine(
+        "sqlite+aiosqlite:///:memory:",
+        echo=False,
+    )
+
+    # Создаем все таблицы
+    async with engine.begin() as conn:
+        await conn.run_sync(metadata.create_all)
+
+    yield engine
+
+    # Очищаем после теста
+    await engine.dispose()

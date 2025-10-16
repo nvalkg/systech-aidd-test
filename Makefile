@@ -1,4 +1,4 @@
-.PHONY: install run dev clean format lint typecheck test quality
+.PHONY: install run dev clean format lint typecheck test quality db-up db-down db-migrate db-reset db-revision
 
 install:
 	uv sync
@@ -22,6 +22,26 @@ run:
 
 dev:
 	uv run python -m src
+
+# Database commands
+db-up:
+	docker-compose up -d
+
+db-down:
+	docker-compose down
+
+db-migrate:
+	uv run alembic upgrade head
+
+db-reset:
+	docker-compose down -v
+	docker-compose up -d
+	@echo "Waiting for PostgreSQL to be ready..."
+	@sleep 5
+	uv run alembic upgrade head
+
+db-revision:
+	uv run alembic revision --autogenerate -m "$(name)"
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +

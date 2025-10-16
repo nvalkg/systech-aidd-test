@@ -31,6 +31,11 @@ class Config:
         self.system_prompt_text: str = os.getenv("SYSTEM_PROMPT", "You are a helpful AI assistant.")
         self.system_prompt: str = self._load_system_prompt()
 
+        # База данных
+        self.database_url: str = os.getenv(
+            "DATABASE_URL", "postgresql+asyncpg://aidd:aidd_dev_password@localhost:5433/aidd"
+        )
+
     def _get_required_env(self, key: str) -> str:
         """Получить обязательную переменную окружения"""
         value = os.getenv(key, "")

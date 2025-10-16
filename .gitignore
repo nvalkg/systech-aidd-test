@@ -26,3 +26,13 @@ Thumbs.db
 
 # UV
 .uv/
+
+# Database
+data/
+*.db
+*.db-journal
+
+# Test coverage
+.coverage
+htmlcov/
+coverage.xml
