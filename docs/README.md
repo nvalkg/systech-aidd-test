@@ -8,7 +8,7 @@
 
 Документы для быстрого старта и понимания проекта:
 
-### 1. [Getting Started](getting-started.md) 🌟
+### 1. [Getting Started](guides/getting-started.md) 🌟
 **Первый шаг для новичков**
 - Установка и настройка за 10 минут
 - Получение токенов (Telegram, OpenRouter)
@@ -19,7 +19,7 @@
 
 ---
 
-### 2. [Codebase Tour](codebase-tour.md) 🗺️
+### 2. [Codebase Tour](guides/codebase-tour.md) 🗺️
 **Экскурсия по коду**
 - Структура проекта (что где лежит)
 - Описание каждого модуля с примерами
@@ -30,7 +30,7 @@
 
 ---
 
-### 3. [Architecture Overview](architecture-overview.md) 🏗️
+### 3. [Architecture Overview](guides/architecture-overview.md) 🏗️
 **Архитектура системы**
 - High-level и low-level диаграммы
 - Sequence diagrams (flow обработки)
@@ -41,7 +41,7 @@
 
 ---
 
-### 4. [Troubleshooting](troubleshooting.md) 🐛
+### 4. [Troubleshooting](guides/troubleshooting.md) 🐛
 **Решение проблем**
 - Частые ошибки и их решения
 - Диагностика проблем (flowcharts)
@@ -52,7 +52,7 @@
 
 ---
 
-### 5. [Visual Guide](visual-guide.md) 🎨
+### 5. [Visual Guide](guides/visual-guide.md) 🎨
 **Визуальный гайд проекта**
 - 35 Mermaid диаграмм с разных точек зрения
 - System, Component, Data Flow views
@@ -225,11 +225,11 @@ graph TD
 
 | Хочу узнать | Где смотреть |
 |-------------|--------------|
-| Как установить | [Getting Started](getting-started.md) |
-| Где находится X | [Codebase Tour](codebase-tour.md) |
-| Как работает Y | [Architecture Overview](architecture-overview.md) |
-| Визуализация проекта | [Visual Guide](visual-guide.md) 🎨 |
-| Почему не работает | [Troubleshooting](troubleshooting.md) |
+| Как установить | [Getting Started](guides/getting-started.md) |
+| Где находится X | [Codebase Tour](guides/codebase-tour.md) |
+| Как работает Y | [Architecture Overview](guides/architecture-overview.md) |
+| Визуализация проекта | [Visual Guide](guides/visual-guide.md) 🎨 |
+| Почему не работает | [Troubleshooting](guides/troubleshooting.md) |
 | Как внести изменения | [CONTRIBUTING.md](../CONTRIBUTING.md) |
 | Как писать тесты | [qa_conventions.mdc](../.cursor/rules/qa_conventions.mdc) |
 | Правила кодирования | [conventions.mdc](../.cursor/rules/conventions.mdc) |
@@ -244,7 +244,7 @@ graph TD
 ### Порядок действий
 
 1. **Проверь документацию** - возможно ответ уже есть
-2. **[Troubleshooting](troubleshooting.md)** - решение частых проблем
+2. **[Troubleshooting](guides/troubleshooting.md)** - решение частых проблем
 3. **Логи** - запусти с `LOG_LEVEL=DEBUG` и читай ошибки
 4. **GitHub Issues** - поищи похожую проблему
 5. **Создай issue** - если не нашел решение
@@ -317,4 +317,4 @@ graph TD
 
 **Приятного изучения проекта! 🚀**
 
-**Вопросы?** → [Troubleshooting](troubleshooting.md) или GitHub Issues
+**Вопросы?** → [Troubleshooting](guides/troubleshooting.md) или GitHub Issues

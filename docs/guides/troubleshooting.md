@@ -701,9 +701,9 @@ graph TD
 ### 1. Проверить документацию
 
 - [README.md](../README.md) - основная документация
-- [docs/getting-started.md](getting-started.md) - быстрый старт
-- [docs/architecture-overview.md](architecture-overview.md) - архитектура
-- [docs/codebase-tour.md](codebase-tour.md) - структура кода
+- [getting-started.md](getting-started.md) - быстрый старт
+- [architecture-overview.md](architecture-overview.md) - архитектура
+- [codebase-tour.md](codebase-tour.md) - структура кода
 
 ### 2. Проверить логи
 

@@ -452,10 +452,13 @@ SYSTEM_PROMPT_FILE=prompts/system_prompt_python_code_reviewer.txt
 
 ```
 docs/
-├── getting-started.md        # Быстрый старт (этот файл)
-├── codebase-tour.md         # Тур по коду (этот файл)
-├── architecture-overview.md # Архитектура
-├── troubleshooting.md       # Решение проблем
+├── guides/                   # Руководства
+│   ├── getting-started.md        # Быстрый старт
+│   ├── codebase-tour.md         # Тур по коду (этот файл)
+│   ├── architecture-overview.md # Архитектура
+│   ├── visual-guide.md          # Визуальный гайд
+│   └── troubleshooting.md       # Решение проблем
+├── README.md                # Индекс документации
 ├── vision.md                # Техническое видение
 ├── tasklist.md              # План разработки
 └── idea.md                  # Идея проекта
@@ -638,8 +641,8 @@ sequenceDiagram
 
 После изучения структуры:
 
-1. **Запусти проект** → [docs/getting-started.md](getting-started.md)
-2. **Изучи архитектуру** → [docs/architecture-overview.md](architecture-overview.md)
+1. **Запусти проект** → [getting-started.md](getting-started.md)
+2. **Изучи архитектуру** → [architecture-overview.md](architecture-overview.md)
 3. **Запусти тесты** → `make test`
 4. **Внеси изменения** → [CONTRIBUTING.md](../CONTRIBUTING.md)
 

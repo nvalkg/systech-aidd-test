@@ -726,9 +726,9 @@ graph TD
 
 После изучения архитектуры:
 
-1. **Запусти проект** → [docs/getting-started.md](getting-started.md)
-2. **Изучи код** → [docs/codebase-tour.md](codebase-tour.md)
-3. **Реши проблемы** → [docs/troubleshooting.md](troubleshooting.md)
+1. **Запусти проект** → [getting-started.md](getting-started.md)
+2. **Изучи код** → [codebase-tour.md](codebase-tour.md)
+3. **Реши проблемы** → [troubleshooting.md](troubleshooting.md)
 4. **Начни разработку** → [CONTRIBUTING.md](../CONTRIBUTING.md)
 
 ---

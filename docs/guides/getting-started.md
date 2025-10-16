@@ -284,7 +284,7 @@ make test
 #### ❌ `API Error: Rate limit exceeded`
 **Решение:** Подожди минуту, OpenRouter имеет лимиты на бесплатном плане
 
-**Больше проблем?** → См. [docs/troubleshooting.md](troubleshooting.md)
+**Больше проблем?** → См. [troubleshooting.md](troubleshooting.md)
 
 ---
 
@@ -292,8 +292,8 @@ make test
 
 После успешного запуска:
 
-1. **📖 Изучить архитектуру** → [docs/architecture-overview.md](architecture-overview.md)
-2. **🗺️ Тур по коду** → [docs/codebase-tour.md](codebase-tour.md)
+1. **📖 Изучить архитектуру** → [architecture-overview.md](architecture-overview.md)
+2. **🗺️ Тур по коду** → [codebase-tour.md](codebase-tour.md)
 3. **🛠️ Начать разработку** → [CONTRIBUTING.md](../CONTRIBUTING.md)
 4. **🧪 Запустить тесты** → `make test`
 5. **🎨 Настроить IDE** → [.vscode/README.md](../.vscode/README.md)
