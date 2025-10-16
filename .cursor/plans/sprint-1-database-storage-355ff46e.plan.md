@@ -19,7 +19,7 @@
 - Создать `docker-compose.yml` с PostgreSQL (порт 5432, volume для данных)
 - Добавить настройки БД в `src/config.py` (DATABASE_URL из .env)
 - Обновить `.env.example` с примером DATABASE_URL
-- Добавить `psycopg2-binary` в зависимости `pyproject.toml`
+- Добавить `asyncpg` в зависимости `pyproject.toml` (для async PostgreSQL)
 
 ### 2. Настройка Alembic
 
