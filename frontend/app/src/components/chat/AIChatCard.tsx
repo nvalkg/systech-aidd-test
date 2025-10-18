@@ -34,7 +34,12 @@ export default function AIChatCard({ className }: AIChatCardProps) {
   useEffect(() => {
     let id = localStorage.getItem("aidd-chat-session-id");
     if (!id) {
-      id = crypto.randomUUID();
+      // Fallback UUID generation for non-secure contexts (HTTP)
+      id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
       localStorage.setItem("aidd-chat-session-id", id);
     }
     setSessionId(id);
