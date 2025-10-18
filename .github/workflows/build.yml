@@ -1,0 +1,71 @@
+name: Build & Publish Docker Images
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches:
+      - main
+      - devops/d1-ci  # временно для тестирования workflow
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service:
+          - name: bot
+            dockerfile: devops/Dockerfile.bot
+            image: aidd-bot
+          - name: api
+            dockerfile: devops/Dockerfile.api
+            image: aidd-api
+          - name: frontend
+            dockerfile: devops/Dockerfile.frontend
+            image: aidd-frontend
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        if: github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/${{ matrix.service.image }}
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=ref,event=branch
+            type=sha
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ matrix.service.dockerfile }}
+          push: ${{ github.event_name == 'push' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{ matrix.service.image }}:buildcache
+          cache-to: ${{ github.event_name == 'push' && format('type=registry,ref=ghcr.io/{0}/{1}:buildcache,mode=max', github.repository_owner, matrix.service.image) || '' }}
+
+      - name: Output image tags
+        run: |
+          echo "Built image: ${{ matrix.service.image }}"
+          echo "Tags: ${{ steps.meta.outputs.tags }}"

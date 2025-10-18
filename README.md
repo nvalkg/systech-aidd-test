@@ -3,6 +3,7 @@
 ![Python Version](https://img.shields.io/badge/python-3.11+-blue.svg)
 ![CI Status](https://img.shields.io/badge/CI-passing-brightgreen.svg)
 ![Coverage](https://img.shields.io/badge/coverage-96%25-brightgreen.svg)
+![Build Status](https://github.com/nvalkg/systech-aidd-test/actions/workflows/build.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 > Простой и эффективный Telegram-бот с интеграцией LLM для ведения диалогов
@@ -40,12 +41,27 @@ Telegram-бот на основе LLM (Large Language Model) для ведени
 
 Запустите весь проект одной командой за 2 минуты:
 
+**Вариант 1: Готовые образы из GitHub Container Registry (быстрее)**
+
 ```bash
 # 1. Настройте переменные окружения
 cp .env.example .env
 # Отредактируйте .env: добавьте TELEGRAM_BOT_TOKEN и OPENROUTER_API_KEY
 
-# 2. Запустите все сервисы
+# 2. Скачайте готовые образы и запустите
+cd devops
+export GITHUB_USERNAME=nvalkg  # или ваш username
+docker-compose -f docker-compose.registry.yml up
+```
+
+**Вариант 2: Локальная сборка (для разработки)**
+
+```bash
+# 1. Настройте переменные окружения
+cp .env.example .env
+# Отредактируйте .env: добавьте TELEGRAM_BOT_TOKEN и OPENROUTER_API_KEY
+
+# 2. Соберите и запустите все сервисы
 cd devops
 docker-compose up
 ```
@@ -65,12 +81,32 @@ docker-compose up
 #### Основные команды
 
 ```bash
+# Локальная сборка
 docker-compose up         # Запуск
 docker-compose up -d      # Запуск в фоне
+
+# Готовые образы из registry
+docker-compose -f docker-compose.registry.yml up    # Запуск
+docker-compose -f docker-compose.registry.yml up -d # В фоне
+
+# Общие команды
 docker-compose ps         # Статус сервисов
 docker-compose logs -f    # Просмотр логов
 docker-compose down       # Остановка
 ```
+
+#### Публичные Docker образы
+
+Доступны готовые образы без авторизации:
+
+```bash
+# Скачать образы
+docker pull ghcr.io/nvalkg/aidd-bot:latest
+docker pull ghcr.io/nvalkg/aidd-api:latest
+docker pull ghcr.io/nvalkg/aidd-frontend:latest
+```
+
+Образы автоматически собираются через GitHub Actions при каждом push в `main`.
 
 📖 **Подробная инструкция:** [Docker Quickstart Guide](devops/doc/guides/docker-quickstart.md)
 📊 **DevOps Roadmap:** [devops/doc/devops-roadmap.md](devops/doc/devops-roadmap.md)
