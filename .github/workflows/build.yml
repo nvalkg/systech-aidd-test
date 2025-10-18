@@ -6,7 +6,6 @@ on:
   push:
     branches:
       - main
-      - devops/d1-ci  # временно для тестирования workflow
 
 jobs:
   build:
