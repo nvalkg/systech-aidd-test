@@ -84,7 +84,11 @@ class RealStatCollector(StatCollector):
             return reference_time - timedelta(days=30)
 
     async def _generate_metrics(
-        self, conn: AsyncConnection, period: str, period_start: datetime, prev_period_start: datetime
+        self,
+        conn: AsyncConnection,
+        period: str,
+        period_start: datetime,
+        prev_period_start: datetime,
     ) -> list[MetricCard]:
         """Генерация 4 карточек метрик из реальных данных"""
 

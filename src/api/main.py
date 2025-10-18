@@ -174,7 +174,7 @@ async def get_stats(
     """
     if collector is None:
         raise HTTPException(status_code=500, detail="Statistics collector not initialized")
-    
+
     try:
         stats = await collector.get_stats(period)
         # Конвертируем dataclass в dict для JSON сериализации
@@ -201,7 +201,7 @@ async def send_message(request: ChatMessageRequest) -> ChatMessageResponse:
     """
     if text2sql_manager is None or normal_conversation_manager is None:
         raise HTTPException(status_code=500, detail="Chat managers not initialized")
-    
+
     try:
         # Конвертируем session_id в user_id (hash для уникальности)
         user_id = hash(request.session_id) % (10**9)
@@ -238,7 +238,7 @@ async def clear_history(request: ChatClearRequest) -> dict[str, str]:
     """
     if normal_conversation_manager is None or admin_conversation_manager is None:
         raise HTTPException(status_code=500, detail="Chat managers not initialized")
-    
+
     try:
         # Конвертируем session_id в user_id
         user_id = hash(request.session_id) % (10**9)
