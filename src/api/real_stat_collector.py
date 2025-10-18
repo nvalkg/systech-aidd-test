@@ -168,8 +168,12 @@ class RealStatCollector(StatCollector):
         )
         row = result.first()
         total_messages_current = row[0] if row else 0
-        total_conversations_current = row[1] if row else 1
-        avg_messages_current = total_messages_current / total_conversations_current
+        total_conversations_current = row[1] if row else 0
+        avg_messages_current = (
+            total_messages_current / total_conversations_current
+            if total_conversations_current > 0
+            else 0
+        )
 
         result = await conn.execute(
             select(
@@ -185,10 +189,16 @@ class RealStatCollector(StatCollector):
         )
         row = result.first()
         total_messages_prev = row[0] if row else 0
-        total_conversations_prev = row[1] if row else 1
-        avg_messages_prev = total_messages_prev / total_conversations_prev or 1
+        total_conversations_prev = row[1] if row else 0
+        avg_messages_prev = (
+            total_messages_prev / total_conversations_prev if total_conversations_prev > 0 else 0
+        )
 
-        avg_messages_trend = ((avg_messages_current - avg_messages_prev) / avg_messages_prev) * 100
+        avg_messages_trend = (
+            ((avg_messages_current - avg_messages_prev) / avg_messages_prev) * 100
+            if avg_messages_prev > 0
+            else 0
+        )
 
         return [
             MetricCard(

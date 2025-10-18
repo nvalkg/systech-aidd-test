@@ -20,6 +20,10 @@ COPY frontend/app/*.mjs ./
 COPY frontend/app/*.ts ./
 COPY frontend/app/*.tsx ./
 
+# Аргумент для API URL (передается через --build-arg)
+ARG NEXT_PUBLIC_API_URL=http://localhost:8000
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
 # Сборка приложения
 RUN pnpm build
 
