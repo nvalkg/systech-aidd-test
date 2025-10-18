@@ -1,0 +1,75 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: aidd-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: aidd
+      POSTGRES_PASSWORD: aidd_dev_password
+      POSTGRES_DB: aidd
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aidd -d aidd"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  bot:
+    build:
+      context: ..
+      dockerfile: devops/Dockerfile.bot
+    container_name: aidd-bot
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      DATABASE_URL: postgresql+asyncpg://aidd:aidd_dev_password@postgres:5432/aidd
+      POSTGRES_USER: aidd
+      POSTGRES_PASSWORD: aidd_dev_password
+      POSTGRES_DB: aidd
+    env_file:
+      - .env
+
+  api:
+    build:
+      context: ..
+      dockerfile: devops/Dockerfile.api
+    container_name: aidd-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://aidd:aidd_dev_password@postgres:5432/aidd
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      POSTGRES_USER: aidd
+      POSTGRES_PASSWORD: aidd_dev_password
+      POSTGRES_DB: aidd
+    env_file:
+      - .env
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: devops/Dockerfile.frontend
+    container_name: aidd-frontend
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+
+volumes:
+  postgres_data:
+    driver: local

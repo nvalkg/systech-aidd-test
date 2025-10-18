@@ -1,0 +1,27 @@
+FROM node:20-slim
+
+WORKDIR /app
+
+# Установка pnpm
+RUN npm install -g pnpm
+
+# Копирование файлов зависимостей
+COPY frontend/app/package.json frontend/app/pnpm-lock.yaml ./
+
+# Установка зависимостей
+RUN pnpm install --frozen-lockfile
+
+# Копирование исходного кода (без node_modules)
+COPY frontend/app/src ./src
+COPY frontend/app/public ./public
+COPY frontend/app/*.json ./
+COPY frontend/app/*.js ./
+COPY frontend/app/*.mjs ./
+COPY frontend/app/*.ts ./
+COPY frontend/app/*.tsx ./
+
+# Сборка приложения
+RUN pnpm build
+
+# Запуск production сервера
+CMD ["pnpm", "start"]

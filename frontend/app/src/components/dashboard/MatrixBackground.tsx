@@ -40,18 +40,19 @@ export function MatrixBackground() {
 
       for (let i = 0; i < drops.length; i++) {
         // Random character
-        const text = chars[Math.floor(Math.random() * chars.length)];
+        const text = chars[Math.floor(Math.random() * chars.length)] || "0";
+        const dropY = drops[i] ?? 0;
 
         // Draw character
         ctx.fillStyle = "#0F0";
-        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        ctx.fillText(text, i * fontSize, dropY * fontSize);
 
         // Reset drop to top randomly after it crosses screen
-        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+        if (dropY * fontSize > canvas.height && Math.random() > 0.975) {
           drops[i] = 0;
+        } else {
+          drops[i] = dropY + 1;
         }
-
-        drops[i]++;
       }
     }
 
