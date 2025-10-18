@@ -4,7 +4,7 @@ import logging
 from datetime import datetime, timedelta
 
 from sqlalchemy import and_, func, select
-from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine
 
 from ..database import conversations, user_messages
 from .models import (
@@ -84,7 +84,7 @@ class RealStatCollector(StatCollector):
             return reference_time - timedelta(days=30)
 
     async def _generate_metrics(
-        self, conn, period: str, period_start: datetime, prev_period_start: datetime
+        self, conn: AsyncConnection, period: str, period_start: datetime, prev_period_start: datetime
     ) -> list[MetricCard]:
         """Генерация 4 карточек метрик из реальных данных"""
 
@@ -163,8 +163,8 @@ class RealStatCollector(StatCollector):
             )
         )
         row = result.first()
-        total_messages_current = row[0] or 0
-        total_conversations_current = row[1] or 1
+        total_messages_current = row[0] if row else 0
+        total_conversations_current = row[1] if row else 1
         avg_messages_current = total_messages_current / total_conversations_current
 
         result = await conn.execute(
@@ -180,8 +180,8 @@ class RealStatCollector(StatCollector):
             )
         )
         row = result.first()
-        total_messages_prev = row[0] or 0
-        total_conversations_prev = row[1] or 1
+        total_messages_prev = row[0] if row else 0
+        total_conversations_prev = row[1] if row else 1
         avg_messages_prev = total_messages_prev / total_conversations_prev or 1
 
         avg_messages_trend = ((avg_messages_current - avg_messages_prev) / avg_messages_prev) * 100
@@ -229,7 +229,7 @@ class RealStatCollector(StatCollector):
             return f"Significant decline this {period}"
 
     async def _generate_activity_chart(
-        self, conn, period: str, period_start: datetime
+        self, conn: AsyncConnection, period: str, period_start: datetime
     ) -> list[TimeSeriesPoint]:
         """Генерация данных для графика активности из реальных сообщений"""
         points = []
@@ -288,7 +288,7 @@ class RealStatCollector(StatCollector):
 
         return points
 
-    async def _generate_recent_conversations(self, conn) -> list[ConversationItem]:
+    async def _generate_recent_conversations(self, conn: AsyncConnection) -> list[ConversationItem]:
         """Генерация списка последних 10 диалогов"""
         # Запрос последних 10 диалогов с количеством сообщений
         result = await conn.execute(
@@ -330,7 +330,7 @@ class RealStatCollector(StatCollector):
 
         return items
 
-    async def _generate_top_users(self, conn) -> list[TopUser]:
+    async def _generate_top_users(self, conn: AsyncConnection) -> list[TopUser]:
         """Генерация топ 5 пользователей по активности"""
         result = await conn.execute(
             select(

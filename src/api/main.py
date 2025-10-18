@@ -15,6 +15,7 @@ from ..db_history_storage import DatabaseHistoryStorage
 from ..llm_client import LLMClient
 from .mock_stat_collector import MockStatCollector
 from .real_stat_collector import RealStatCollector
+from .stat_collector import StatCollector
 from .text2sql_manager import Text2SQLManager
 
 logger = logging.getLogger(__name__)
@@ -37,10 +38,10 @@ app.add_middleware(
 )
 
 # Глобальные переменные для менеджеров (инициализируются при старте)
-collector = None
-normal_conversation_manager = None
-admin_conversation_manager = None
-text2sql_manager = None
+collector: StatCollector | None = None
+normal_conversation_manager: ConversationManager | None = None
+admin_conversation_manager: ConversationManager | None = None
+text2sql_manager: Text2SQLManager | None = None
 
 
 # Pydantic модели для Chat API
@@ -61,7 +62,7 @@ class ChatClearRequest(BaseModel):
 
 
 @app.on_event("startup")
-async def startup_event():
+async def startup_event() -> None:
     """Инициализация при запуске приложения"""
     global collector, normal_conversation_manager, admin_conversation_manager, text2sql_manager
 
@@ -171,6 +172,9 @@ async def get_stats(
         HTTPException 400: Если передан некорректный период
         HTTPException 500: При внутренней ошибке сервера
     """
+    if collector is None:
+        raise HTTPException(status_code=500, detail="Statistics collector not initialized")
+    
     try:
         stats = await collector.get_stats(period)
         # Конвертируем dataclass в dict для JSON сериализации
@@ -195,6 +199,9 @@ async def send_message(request: ChatMessageRequest) -> ChatMessageResponse:
     Raises:
         HTTPException 500: При ошибке обработки сообщения
     """
+    if text2sql_manager is None or normal_conversation_manager is None:
+        raise HTTPException(status_code=500, detail="Chat managers not initialized")
+    
     try:
         # Конвертируем session_id в user_id (hash для уникальности)
         user_id = hash(request.session_id) % (10**9)
@@ -229,6 +236,9 @@ async def clear_history(request: ChatClearRequest) -> dict[str, str]:
     Raises:
         HTTPException 500: При ошибке очистки истории
     """
+    if normal_conversation_manager is None or admin_conversation_manager is None:
+        raise HTTPException(status_code=500, detail="Chat managers not initialized")
+    
     try:
         # Конвертируем session_id в user_id
         user_id = hash(request.session_id) % (10**9)

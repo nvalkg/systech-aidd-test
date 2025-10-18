@@ -127,7 +127,7 @@ class Text2SQLManager:
 
         # Удаляем комментарии для безопасности (но сохраняем начальный комментарий)
         lines = sql.split("\n")
-        cleaned_lines = []
+        cleaned_lines: list[str] = []
         for line in lines:
             # Убираем inline комментарии в середине запроса
             if "--" in line:
