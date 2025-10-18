@@ -2,7 +2,7 @@
 
 ## Проблема
 
-Next.js встраивает переменные окружения `NEXT_PUBLIC_*` в JavaScript код **на этапе сборки**, а не берет их из окружения в runtime. 
+Next.js встраивает переменные окружения `NEXT_PUBLIC_*` в JavaScript код **на этапе сборки**, а не берет их из окружения в runtime.
 
 Это означает, что если образ был собран с одним `NEXT_PUBLIC_API_URL`, то изменение переменной окружения в `docker-compose.yml` **не повлияет** на работу приложения.
 
@@ -142,4 +142,3 @@ docker build \
 - [Next.js Environment Variables](https://nextjs.org/docs/pages/building-your-application/configuring/environment-variables)
 - [Docker Build Args](https://docs.docker.com/engine/reference/commandline/build/#build-arg)
 - [Manual Deploy Guide](manual-deploy.md)
-
